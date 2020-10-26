@@ -80,8 +80,8 @@ class Project:
         self.package_description: str = utils.remove_string_escapes(
             f"A client library for accessing {self.openapi.title}"
         )
+        self.client_name: str = f"{utils.pascal_case(openapi.title)}Client"
         self.version: str = self.package_version_override or openapi.version
-
         self.env.filters.update(TEMPLATE_FILTERS)
 
     def build(self) -> Sequence[GeneratorError]:
@@ -146,7 +146,8 @@ class Project:
 
         package_init_template = self.env.get_template("package_init.py.jinja")
         package_init.write_text(
-            package_init_template.render(description=self.package_description), encoding=self.file_encoding
+            package_init_template.render(client_name=self.client_name, description=self.package_description),
+            encoding=self.file_encoding,
         )
 
         if self.meta != MetaType.NONE:
@@ -238,7 +239,20 @@ class Project:
         # Generate Client
         client_path = self.package_dir / "client.py"
         client_template = self.env.get_template("client.py.jinja")
-        client_path.write_text(client_template.render(), encoding=self.file_encoding)
+        client_path.write_text(client_template.render(title=self.openapi.title), encoding=self.file_encoding)
+
+        # Generate wrapper
+        imports = [m.reference.class_name for m in self.openapi.models.values()]
+        imports.extend([e.reference.class_name for e in self.openapi.enums.values()])
+        wrapper = self.package_dir / "wrapper.py"
+        wrapper_template = self.env.get_template("wrapper.py.jinja")
+        wrapper.write_text(
+            wrapper_template.render(
+                client_name=self.client_name,
+                imports=imports,
+                endpoint_collections=self.openapi.endpoint_collections_by_tag,
+            )
+        )
 
         # Generate endpoints
         api_dir = self.package_dir / "api"
@@ -250,7 +264,9 @@ class Project:
         for tag, collection in self.openapi.endpoint_collections_by_tag.items():
             tag_dir = api_dir / tag
             tag_dir.mkdir()
-            (tag_dir / "__init__.py").touch()
+            tag_init = tag_dir / "__init__.py"
+            tag_init_template = self.env.get_template("tag_init.py.jinja")
+            tag_init.write_text(tag_init_template.render(tag=tag, collection=collection))
 
             for endpoint in collection.endpoints:
                 module_path = tag_dir / f"{snake_case(endpoint.name)}.py"

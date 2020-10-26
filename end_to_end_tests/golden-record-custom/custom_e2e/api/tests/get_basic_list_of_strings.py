@@ -27,7 +27,6 @@ def _build_response(*, response: httpx.Response) -> Response[List[str]]:
 
 
 def httpx_request(
-    *,
     client: Client,
 ) -> Response[List[str]]:
 
