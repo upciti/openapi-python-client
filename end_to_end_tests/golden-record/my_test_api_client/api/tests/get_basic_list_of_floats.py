@@ -7,7 +7,6 @@ from ...types import Response
 
 
 def _get_kwargs(
-    *,
     client: Client,
 ) -> Dict[str, Any]:
     url = "{}/tests/basic_lists/floats".format(client.base_url)
@@ -41,7 +40,6 @@ def _build_response(*, response: httpx.Response) -> Response[List[float]]:
 
 
 def sync_detailed(
-    *,
     client: Client,
 ) -> Response[List[float]]:
     kwargs = _get_kwargs(
@@ -56,7 +54,6 @@ def sync_detailed(
 
 
 def sync(
-    *,
     client: Client,
 ) -> Optional[List[float]]:
     """ Get a list of floats  """
@@ -67,7 +64,6 @@ def sync(
 
 
 async def asyncio_detailed(
-    *,
     client: Client,
 ) -> Response[List[float]]:
     kwargs = _get_kwargs(
@@ -81,7 +77,6 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    *,
     client: Client,
 ) -> Optional[List[float]]:
     """ Get a list of floats  """

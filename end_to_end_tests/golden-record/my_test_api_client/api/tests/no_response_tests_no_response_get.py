@@ -7,7 +7,6 @@ from ...types import Response
 
 
 def _get_kwargs(
-    *,
     client: Client,
 ) -> Dict[str, Any]:
     url = "{}/tests/no_response".format(client.base_url)
@@ -33,7 +32,6 @@ def _build_response(*, response: httpx.Response) -> Response[None]:
 
 
 def sync_detailed(
-    *,
     client: Client,
 ) -> Response[None]:
     kwargs = _get_kwargs(
@@ -48,7 +46,6 @@ def sync_detailed(
 
 
 async def asyncio_detailed(
-    *,
     client: Client,
 ) -> Response[None]:
     kwargs = _get_kwargs(

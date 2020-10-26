@@ -29,7 +29,6 @@ def _build_response(*, response: httpx.Response) -> Response[File]:
 
 
 def httpx_request(
-    *,
     client: Client,
 ) -> Response[File]:
 
