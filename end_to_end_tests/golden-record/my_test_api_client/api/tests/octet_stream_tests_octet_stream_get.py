@@ -8,7 +8,6 @@ from ...types import File, Response
 
 
 def _get_kwargs(
-    *,
     client: Client,
 ) -> Dict[str, Any]:
     url = "{}/tests/octet_stream".format(client.base_url)
@@ -42,7 +41,6 @@ def _build_response(*, response: httpx.Response) -> Response[File]:
 
 
 def sync_detailed(
-    *,
     client: Client,
 ) -> Response[File]:
     kwargs = _get_kwargs(
@@ -57,7 +55,6 @@ def sync_detailed(
 
 
 def sync(
-    *,
     client: Client,
 ) -> Optional[File]:
     """ """
@@ -68,7 +65,6 @@ def sync(
 
 
 async def asyncio_detailed(
-    *,
     client: Client,
 ) -> Response[File]:
     kwargs = _get_kwargs(
@@ -82,7 +78,6 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    *,
     client: Client,
 ) -> Optional[File]:
     """ """

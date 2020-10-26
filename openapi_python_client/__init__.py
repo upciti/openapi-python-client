@@ -78,8 +78,9 @@ class Project:
         self.package_description: str = utils.remove_string_escapes(
             f"A client library for accessing {self.openapi.title}"
         )
-        self.version: str = config.package_version_override or openapi.version
 
+        self.client_name: str = f"{utils.pascal_case(openapi.title)}Client"
+        self.version: str = config.package_version_override or openapi.version
         self.env.filters.update(TEMPLATE_FILTERS)
 
     def build(self) -> Sequence[GeneratorError]:
@@ -144,7 +145,8 @@ class Project:
 
         package_init_template = self.env.get_template("package_init.py.jinja")
         package_init.write_text(
-            package_init_template.render(description=self.package_description), encoding=self.file_encoding
+            package_init_template.render(client_name=self.client_name, description=self.package_description),
+            encoding=self.file_encoding,
         )
 
         if self.meta != MetaType.NONE:
@@ -211,12 +213,14 @@ class Project:
         models_dir.mkdir()
         models_init = models_dir / "__init__.py"
         imports = []
+        wrapper_imports = []
 
         model_template = self.env.get_template("model.py.jinja")
         for model in self.openapi.models:
             module_path = models_dir / f"{model.class_info.module_name}.py"
             module_path.write_text(model_template.render(model=model), encoding=self.file_encoding)
             imports.append(import_string_from_class(model.class_info))
+            wrapper_imports.append(model.class_info.name)
 
         # Generate enums
         str_enum_template = self.env.get_template("str_enum.py.jinja")
@@ -228,15 +232,27 @@ class Project:
             else:
                 module_path.write_text(str_enum_template.render(enum=enum), encoding=self.file_encoding)
             imports.append(import_string_from_class(enum.class_info))
+            wrapper_imports.append(enum.class_info.name)
 
         models_init_template = self.env.get_template("models_init.py.jinja")
         models_init.write_text(models_init_template.render(imports=imports), encoding=self.file_encoding)
+
+        # Generate wrapper
+        wrapper = self.package_dir / "wrapper.py"
+        wrapper_template = self.env.get_template("wrapper.py.jinja")
+        wrapper.write_text(
+            wrapper_template.render(
+                client_name=self.client_name,
+                imports=wrapper_imports,
+                endpoint_collections=self.openapi.endpoint_collections_by_tag,
+            )
+        )
 
     def _build_api(self) -> None:
         # Generate Client
         client_path = self.package_dir / "client.py"
         client_template = self.env.get_template("client.py.jinja")
-        client_path.write_text(client_template.render(), encoding=self.file_encoding)
+        client_path.write_text(client_template.render(title=self.openapi.title), encoding=self.file_encoding)
 
         # Generate endpoints
         api_dir = self.package_dir / "api"
@@ -248,7 +264,9 @@ class Project:
         for tag, collection in self.openapi.endpoint_collections_by_tag.items():
             tag_dir = api_dir / tag
             tag_dir.mkdir()
-            (tag_dir / "__init__.py").touch()
+            tag_init = tag_dir / "__init__.py"
+            tag_init_template = self.env.get_template("tag_init.py.jinja")
+            tag_init.write_text(tag_init_template.render(tag=tag, collection=collection))
 
             for endpoint in collection.endpoints:
                 module_path = tag_dir / f"{snake_case(endpoint.name)}.py"

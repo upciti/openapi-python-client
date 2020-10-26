@@ -64,7 +64,7 @@ def run_e2e_test(extra_args=None, expected_differences=None):
 
     import mypy.api
 
-    out, err, status = mypy.api.run([str(output_path), "--strict"])
+    out, err, status = mypy.api.run([str(output_path), "--strict --implicit-reexport"])
     assert status == 0, f"Type checking client failed: {out}"
 
     shutil.rmtree(output_path)

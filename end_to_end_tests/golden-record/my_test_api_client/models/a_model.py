@@ -282,7 +282,11 @@ class AModel:
 
             return nullable_one_of_models_type_1
 
-        nullable_one_of_models = _parse_nullable_one_of_models(d.pop("nullable_one_of_models"))
+        nullable_one_of_models_ = d.pop("nullable_one_of_models")
+        if nullable_one_of_models_ is not None:
+            nullable_one_of_models = _parse_nullable_one_of_models(nullable_one_of_models_)
+        else:
+            nullable_one_of_models = None
 
         def _parse_not_required_one_of_models(data: object) -> Union[FreeFormModel, ModelWithUnionProperty, Unset]:
             if isinstance(data, Unset):
@@ -352,9 +356,13 @@ class AModel:
                 pass
             return cast(Union[FreeFormModel, ModelWithUnionProperty, None, Unset, str], data)
 
-        not_required_nullable_one_of_models = _parse_not_required_nullable_one_of_models(
-            d.pop("not_required_nullable_one_of_models", UNSET)
-        )
+        not_required_nullable_one_of_models_ = d.pop("not_required_nullable_one_of_models", UNSET)
+        if not_required_nullable_one_of_models_ is not None:
+            not_required_nullable_one_of_models = _parse_not_required_nullable_one_of_models(
+                not_required_nullable_one_of_models_
+            )
+        else:
+            not_required_nullable_one_of_models = None
 
         _nullable_model = d.pop("nullable_model")
         nullable_model: Optional[ModelWithUnionProperty]
