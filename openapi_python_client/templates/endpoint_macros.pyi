@@ -70,13 +70,18 @@ Union[
 {% endmacro %}
 
 {# The all the kwargs passed into an endpoint (and variants thereof)) #}
-{% macro arguments(endpoint) %}
+{% macro arguments(endpoint, client=True) %}
+
+{% if endpoint.path_parameters.__len__() > 1 %}
 *,
+{% endif %}
 {# Proper client based on whether or not the endpoint requires authentication #}
+{% if client %}
 {% if endpoint.requires_security %}
 client: AuthenticatedClient,
 {% else %}
 client: Client,
+{% endif %}
 {% endif %}
 {# path parameters #}
 {% for parameter in endpoint.path_parameters %}
