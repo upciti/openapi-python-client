@@ -26,7 +26,7 @@ __version__ = version(__package__)
 
 
 class Project:
-    TEMPLATE_FILTERS = {"snakecase": utils.snake_case, "kebabcase": utils.kebab_case}
+    TEMPLATE_FILTERS = {"snakecase": utils.snake_case, "kebabcase": utils.kebab_case, "pascalcase": utils.pascal_case}
     project_name_override: Optional[str] = None
     package_name_override: Optional[str] = None
 
@@ -76,7 +76,7 @@ class Project:
 
     def _reformat(self) -> None:
         subprocess.run(
-            "autoflake -i -r --remove-all-unused-imports --remove-unused-variables .",
+            "autoflake -i -r --remove-all-unused-imports --remove-unused-variables . --ignore-init-module-imports",
             cwd=self.package_dir,
             shell=True,
             stdout=subprocess.PIPE,
@@ -173,6 +173,13 @@ class Project:
         client_template = self.env.get_template("client.pyi")
         client_path.write_text(client_template.render())
 
+        # Generate wrapper
+        wrapper = self.package_dir / "wrapper.py"
+        wrapper_template = self.env.get_template("wrapper.pyi")
+        wrapper.write_text(wrapper_template.render(
+            models=self.openapi.schemas.models.values(),
+            endpoint_collections=self.openapi.endpoint_collections_by_tag))
+
         # Generate endpoints
         api_dir = self.package_dir / "api"
         api_dir.mkdir()
@@ -184,11 +191,15 @@ class Project:
             tag = utils.snake_case(tag)
             tag_dir = api_dir / tag
             tag_dir.mkdir()
-            (tag_dir / "__init__.py").touch()
+            tag_init = tag_dir / "__init__.py"
+            tag_init_template = self.env.get_template("tag_init.pyi")
+            tag_init.write_text(tag_init_template.render(
+                tag=tag, collection=collection))
 
             for endpoint in collection.endpoints:
                 module_path = tag_dir / f"{snake_case(endpoint.name)}.py"
                 module_path.write_text(endpoint_template.render(endpoint=endpoint))
+
 
 
 def _get_project_for_url_or_path(url: Optional[str], path: Optional[Path]) -> Union[Project, GeneratorError]:
