@@ -29,6 +29,7 @@ class Project:
     TEMPLATE_FILTERS = {"snakecase": utils.snake_case, "kebabcase": utils.kebab_case, "pascalcase": utils.pascal_case}
     project_name_override: Optional[str] = None
     package_name_override: Optional[str] = None
+    package_version_override: Optional[str] = None
 
     def __init__(self, *, openapi: GeneratorData) -> None:
         self.openapi: GeneratorData = openapi
@@ -42,9 +43,8 @@ class Project:
         self.package_description: str = utils.remove_string_escapes(
             f"A client library for accessing {self.openapi.title}"
         )
-        self.version: str = openapi.version
+        self.version: str = self.package_version_override or openapi.version
         self.client_name: str = f'{utils.pascal_case(openapi.title)}Client'
-
         self.env.filters.update(self.TEMPLATE_FILTERS)
 
     def build(self) -> Sequence[GeneratorError]:
