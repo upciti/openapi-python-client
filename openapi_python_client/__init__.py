@@ -43,6 +43,7 @@ class Project:
             f"A client library for accessing {self.openapi.title}"
         )
         self.version: str = openapi.version
+        self.client_name: str = f'{utils.pascal_case(openapi.title)}Client'
 
         self.env.filters.update(self.TEMPLATE_FILTERS)
 
@@ -104,7 +105,9 @@ class Project:
         package_init = self.package_dir / "__init__.py"
 
         package_init_template = self.env.get_template("package_init.pyi")
-        package_init.write_text(package_init_template.render(description=self.package_description))
+        package_init.write_text(package_init_template.render(
+            client_name=self.client_name,
+            description=self.package_description))
 
         pytyped = self.package_dir / "py.typed"
         pytyped.write_text("# Marker file for PEP 561")
@@ -171,12 +174,13 @@ class Project:
         # Generate Client
         client_path = self.package_dir / "client.py"
         client_template = self.env.get_template("client.pyi")
-        client_path.write_text(client_template.render())
+        client_path.write_text(client_template.render(title=self.openapi.title))
 
         # Generate wrapper
         wrapper = self.package_dir / "wrapper.py"
         wrapper_template = self.env.get_template("wrapper.pyi")
         wrapper.write_text(wrapper_template.render(
+            client_name=self.client_name,
             models=self.openapi.schemas.models.values(),
             endpoint_collections=self.openapi.endpoint_collections_by_tag))
 

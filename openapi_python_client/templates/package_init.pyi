@@ -1,3 +1,3 @@
 """ {{ description }} """
 
-from .wrapper import Client, SyncClient
+from .wrapper import {{ client_name }}, Sync{{ client_name }}

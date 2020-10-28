@@ -52,10 +52,10 @@ class Sync{{ tag | pascalcase }}Api:
 
 {% endfor %}
 
-{% for i in '', 'Sync' %}
+{% for prefix in '', 'Sync' %}
 
-class {{ i }}Client:
-    def __init__(self, base_url: str, timeout: float = 5.0, token: Optional[str] = None):
+class {{ prefix }}{{ client_name }}:
+    def __init__(self, base_url: Optional[str] = None, timeout: float = 5.0, token: Optional[str] = None):
         if token is None:
             self.connection = InnerClient(
                 base_url=base_url,
@@ -66,7 +66,7 @@ class {{ i }}Client:
                 timeout=timeout,
                 token=token)
         {% for tag, collection in endpoint_collections.items() %}
-        self.{{ tag | snakecase }} = {{ i }}{{ tag | pascalcase }}Api(self.connection)
+        self.{{ tag | snakecase }} = {{ prefix }}{{ tag | pascalcase }}Api(self.connection)
         {% endfor %}
 
 {% endfor %}
