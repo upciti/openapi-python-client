@@ -2,8 +2,8 @@ from typing import Any, Dict, Optional, Union, cast
 from .client import Client as InnerClient, AuthenticatedClient
 
 from .models import (
-    {% for model in models %}
-    {{ model.reference.class_name }},
+    {% for import in imports | sort %}
+    {{ import }},
     {% endfor %}
 )
 
