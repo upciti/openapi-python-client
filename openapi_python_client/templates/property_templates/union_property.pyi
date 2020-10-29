@@ -29,7 +29,7 @@ if {{ source }} is not None:
 {% endmacro %}
 
 {% macro transform(property, source, destination) %}
-{% if not property.required %}
+{% if not property.required or property.nullable %}
 if {{ source }} is None:
     {{ destination }}: {{ property.get_type_string() }} = None
 {% endif %}

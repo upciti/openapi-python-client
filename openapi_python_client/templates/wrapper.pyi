@@ -3,7 +3,7 @@ from .client import Client as InnerClient, AuthenticatedClient
 
 from .models import (
     {% for import in imports | sort %}
-    {{ import }}
+    {{ import }},
     {% endfor %}
 )
 

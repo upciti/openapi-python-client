@@ -29,7 +29,8 @@ class TestLoadConfig:
         config = Config(
             project_name_override="project-name",
             package_name_override="package_name",
-            package_version_override = "package_version")
+            package_version_override="package_version",
+        )
         config.load_config()
 
         from openapi_python_client import Project

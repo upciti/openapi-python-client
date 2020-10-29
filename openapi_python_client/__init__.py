@@ -44,7 +44,7 @@ class Project:
             f"A client library for accessing {self.openapi.title}"
         )
         self.version: str = self.package_version_override or openapi.version
-        self.client_name: str = f'{utils.pascal_case(openapi.title)}Client'
+        self.client_name: str = f"{utils.pascal_case(openapi.title)}Client"
         self.env.filters.update(self.TEMPLATE_FILTERS)
 
     def build(self) -> Sequence[GeneratorError]:
@@ -77,7 +77,7 @@ class Project:
 
     def _reformat(self) -> None:
         subprocess.run(
-            "autoflake -i -r --remove-all-unused-imports --remove-unused-variables . --ignore-init-module-imports",
+            "autoflake -i -r --remove-all-unused-imports --remove-unused-variables --ignore-init-module-imports .",
             cwd=self.package_dir,
             shell=True,
             stdout=subprocess.PIPE,
@@ -105,9 +105,9 @@ class Project:
         package_init = self.package_dir / "__init__.py"
 
         package_init_template = self.env.get_template("package_init.pyi")
-        package_init.write_text(package_init_template.render(
-            client_name=self.client_name,
-            description=self.package_description))
+        package_init.write_text(
+            package_init_template.render(client_name=self.client_name, description=self.package_description)
+        )
 
         pytyped = self.package_dir / "py.typed"
         pytyped.write_text("# Marker file for PEP 561")
@@ -181,10 +181,13 @@ class Project:
         imports.extend([e.reference.class_name for e in self.openapi.enums.values()])
         wrapper = self.package_dir / "wrapper.py"
         wrapper_template = self.env.get_template("wrapper.pyi")
-        wrapper.write_text(wrapper_template.render(
-            client_name=self.client_name,
-            imports=imports,
-            endpoint_collections=self.openapi.endpoint_collections_by_tag))
+        wrapper.write_text(
+            wrapper_template.render(
+                client_name=self.client_name,
+                imports=imports,
+                endpoint_collections=self.openapi.endpoint_collections_by_tag,
+            )
+        )
 
         # Generate endpoints
         api_dir = self.package_dir / "api"
@@ -199,13 +202,11 @@ class Project:
             tag_dir.mkdir()
             tag_init = tag_dir / "__init__.py"
             tag_init_template = self.env.get_template("tag_init.pyi")
-            tag_init.write_text(tag_init_template.render(
-                tag=tag, collection=collection))
+            tag_init.write_text(tag_init_template.render(tag=tag, collection=collection))
 
             for endpoint in collection.endpoints:
                 module_path = tag_dir / f"{snake_case(endpoint.name)}.py"
                 module_path.write_text(endpoint_template.render(endpoint=endpoint))
-
 
 
 def _get_project_for_url_or_path(url: Optional[str], path: Optional[Path]) -> Union[Project, GeneratorError]:
