@@ -191,6 +191,11 @@ class Endpoint:
                 endpoint.header_parameters.append(prop)
             else:
                 return ParseError(data=param, detail="Parameter must be declared in path or query")
+
+        # Optional parameters must be last
+        for parameters in [endpoint.path_parameters, endpoint.query_parameters, endpoint.header_parameters]:
+            parameters.sort(key=lambda e: e.nullable or not e.required)
+
         return endpoint
 
     @staticmethod
