@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, Optional, Union, cast, List
 from .client import Client as InnerClient, AuthenticatedClient
 
 from .models import (
