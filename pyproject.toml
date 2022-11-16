@@ -21,7 +21,7 @@ include = ["CHANGELOG.md", "openapi_python_client/py.typed"]
 [tool.poetry.dependencies]
 python = "^3.6.2"
 jinja2 = "^3.0.0"
-typer = "^0.3"
+typer = "^0.7"
 colorama = {version = "^0.4.3", markers = "sys_platform == 'win32'"}
 shellingham = "^1.3.2"
 black = "*"
@@ -46,7 +46,6 @@ safety = "*"
 pytest-cov = "*"
 python-multipart = "*"
 flake8 = "*"
-typer-cli = "^0.0.11"
 
 [tool.taskipy.tasks]
 check = """
