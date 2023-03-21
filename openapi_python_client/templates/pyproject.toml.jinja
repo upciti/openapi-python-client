@@ -15,12 +15,12 @@ include = ["CHANGELOG.md", "{{ package_name }}/py.typed"]
 [tool.poetry.dependencies]
 python = "^3.6"
 httpx = ">=0.15.4"
-attrs = ">=20.1.0,<22.0.0"
-python-dateutil = "^2.8.0"
+attrs = ">=20.1.0"
+python-dateutil = ">=2.8.0"
 
 [tool.black]
 line-length = 120
-target_version = ['py36', 'py37', 'py38']
+target_version = ['py36', 'py37', 'py38', 'py39', 'py310', 'py311']
 exclude = '''
 (
   /(
