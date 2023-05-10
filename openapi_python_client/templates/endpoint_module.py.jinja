@@ -20,15 +20,14 @@ from ... import errors
 def _get_kwargs(
     {{ arguments(endpoint) | indent(4) }}
 ) -> Dict[str, Any]:
-    url = "{}{{ endpoint.path }}".format(
-        client.base_url
+    url = "{{ endpoint.path }}".format(
         {%- for parameter in endpoint.path_parameters.values() -%}
-        ,{{parameter.name}}={{parameter.python_name}}
+        {{parameter.name}}={{parameter.python_name}}{{ ", " if not loop.last else "" }}
         {%- endfor -%}
     )
 
-    headers: Dict[str, str] = client.get_headers()
-    cookies: Dict[str, Any] = client.get_cookies()
+    headers: Dict[str, str] = {}
+    cookies: Dict[str, Any] = {}
 
     {{ header_params(endpoint) | indent(4) }}
 
@@ -45,8 +44,6 @@ def _get_kwargs(
         "url": url,
         "headers": headers,
         "cookies": cookies,
-        "timeout": client.get_timeout(),
-        "follow_redirects": client.follow_redirects,
         {% if endpoint.form_body %}
         "data": form_data.to_dict(),
         {% elif endpoint.multipart_body %}
@@ -98,10 +95,7 @@ def sync_detailed(
         {{ kwargs(endpoint) }}
     )
 
-    response = httpx.request(
-        verify=client.verify_ssl,
-        **kwargs,
-    )
+    response = client.sync_httpx_client.request(**kwargs)
 
     return _build_response(client=client, response=response)
 
@@ -125,10 +119,7 @@ async def asyncio_detailed(
         {{ kwargs(endpoint) }}
     )
 
-    async with httpx.AsyncClient(verify=client.verify_ssl) as _client:
-        response = await _client.request(
-            **kwargs
-        )
+    response = await client.async_httpx_client.request(**kwargs)
 
     return _build_response(client=client, response=response)
 

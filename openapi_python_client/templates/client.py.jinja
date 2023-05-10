@@ -1,6 +1,8 @@
 import ssl
 from typing import Dict, Union
 import attr
+import httpx
+
 
 @attr.s(auto_attribs=True)
 class Client:
@@ -48,6 +50,34 @@ class Client:
     def with_timeout(self, timeout: float) -> "Client":
         """ Get a new client matching this one with a new timeout (in seconds) """
         return attr.evolve(self, timeout=timeout)
+
+    def _get_kwargs(self):
+        return dict(
+            base_url=self.base_url,
+            verify=self.verify_ssl,
+            timeout=self.timeout,
+            follow_redirects=self.follow_redirects,
+            headers=self.get_headers(),
+            cookies=self.get_cookies(),
+        )
+
+    def __attrs_post_init__(self):
+        self.sync_httpx_client = httpx.Client(**self._get_kwargs())
+        self.async_httpx_client = httpx.AsyncClient(**self._get_kwargs())
+
+    def __enter__(self) -> "Client":
+        return self
+
+    def __exit__(self) -> None:
+        self.sync_httpx_client.close()
+
+    async def __aenter__(self) -> "Client":
+        return self
+
+    async def __aexit__(self) -> None:
+        await self.async_httpx_client.aclose()
+
+
 
 @attr.s(auto_attribs=True)
 class AuthenticatedClient(Client):
